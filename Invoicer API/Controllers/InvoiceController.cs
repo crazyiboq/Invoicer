@@ -1,21 +1,31 @@
-﻿using Invoicer_API.Models;
+﻿using Invoicer_API.DTOs;
 using Invoicer_API.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq.Expressions;
+using System;
+using System.Threading.Tasks;
 
-namespace Invoicer_API.Controllers;
-
+[ApiController]
+[Route("api/[controller]")]
 public class InvoiceController : ControllerBase
 {
-    private readonly IInvoiceService _service;
+    private readonly IInvoiceService _invoiceService;
 
-    public InvoiceController(IInvoiceService service)
+    public InvoiceController(IInvoiceService invoiceService)
     {
-        _service = service;
+        _invoiceService = invoiceService;
     }
 
-    public async Task<ActionResult<Invoice>> Get()
+    [HttpPost]
+    public async Task<ActionResult<Guid>> CreateInvoice([FromBody] CreateInvoiceRequest request)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var id = await _invoiceService.CreateInvoiceAsync(request);
+            return Ok(id);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }
