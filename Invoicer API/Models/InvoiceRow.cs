@@ -1,6 +1,18 @@
-﻿namespace Invoicer_API.Models
+﻿ namespace Invoicer_API.Models;
+
+public class InvoiceRow
 {
-    public class Class
-    {
-    }
+    public Guid Id { get; set; }
+
+    public Guid InvoiceId { get; set; }
+
+    public string Service { get; set; }
+
+    public decimal Quanity { get; set; }
+
+    public decimal Amount { get; set; }
+
+    public decimal Sum { get; set; }
+
+
 }
