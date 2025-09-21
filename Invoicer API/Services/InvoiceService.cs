@@ -1,7 +1,8 @@
 ﻿using Invoicer_API.Data;
-using Invoicer_API.Models;
 using Invoicer_API.DTOs;
 using Invoicer_API.Enums;
+using Invoicer_API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Invoicer_API.Services;
 
@@ -19,9 +20,20 @@ public class InvoiceService : IInvoiceService
         throw new NotImplementedException();
     }
 
-    public Task<Invoice> ChangeInvoiceStatusAsync(Guid invoiceId, InvoiceStatus newStatus)
+    public async Task<Invoice> ChangeInvoiceStatusAsync(Guid invoiceId, InvoiceStatus newStatus)
     {
-        throw new NotImplementedException();
+        var invoice = await _dbContext.Invoices
+                            .FirstOrDefaultAsync(i => i.Id == invoiceId);
+
+        if (invoice == null)
+            throw new KeyNotFoundException($"Invoice with ID {invoiceId} not found.");
+
+
+        invoice.Status = newStatus;
+
+        await _dbContext.SaveChangesAsync();
+
+        return invoice;
     }
 
     public async Task<Invoice> CreateInvoiceAsync(CreateInvoiceRequest request)
@@ -67,9 +79,17 @@ public class InvoiceService : IInvoiceService
         return invoice;
     }
 
-    public Task<bool> DeleteInvoiceAsync(Guid invoiceId)
+    public async Task<bool> DeleteInvoiceAsync(Guid invoiceId)
     {
-        throw new NotImplementedException();
+        var invoice = await _dbContext.Invoices.FindAsync(invoiceId);
+
+        if (invoice == null)
+            return false;
+
+        _dbContext.Invoices.Remove(invoice);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
     }
 
     public Task<Invoice> EditInvoiceAsync(Invoice editedInvoice)
@@ -77,13 +97,18 @@ public class InvoiceService : IInvoiceService
         throw new NotImplementedException();
     }
 
-    public Task<Invoice?> GetInvoiceByIdAsync(Guid invoiceId)
+    public async Task<Invoice?> GetInvoiceByIdAsync(Guid invoiceId)
     {
-        throw new NotImplementedException();
+        return await _dbContext.Invoices
+            .Include(i => i.Rows)
+            .FirstOrDefaultAsync(i => i.Id == invoiceId);
     }
 
-    public Task<IEnumerable<Invoice>> GetInvoiceListAsync()
+
+    public async Task<IEnumerable<Invoice>> GetInvoiceListAsync()
     {
-        throw new NotImplementedException();
+        return await _dbContext.Invoices
+            .Include(i => i.Rows)
+            .ToListAsync();
     }
 }
