@@ -8,5 +8,5 @@ public enum InvoiceStatus
     Paid = 3,
     Cancelled = 4,
     Rejected = 5,
-
+    Archived = 6
 }

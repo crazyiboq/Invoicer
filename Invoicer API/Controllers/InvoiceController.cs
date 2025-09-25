@@ -1,7 +1,9 @@
 ﻿using Invoicer_API.DTOs;
 using Invoicer_API.Enums;
+using Invoicer_API.Models;
 using Invoicer_API.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 
@@ -65,5 +67,31 @@ public class InvoiceController : ControllerBase
         var invoices = await _invoiceService.GetInvoiceListAsync();
         return Ok(invoices);
 
+    }
+
+    [HttpPut("{invoiceId}")]
+    public async Task<IActionResult> EditInvoice(Guid invoiceId, [FromBody] Invoice editedInvoice)
+    {
+        if (invoiceId != editedInvoice.Id)
+            return BadRequest("Invoice ID mismatch.");
+
+        var updatedInvoice = await _invoiceService.EditInvoiceAsync(editedInvoice);
+
+        if (updatedInvoice == null)
+            return NotFound($"Invoice with ID {invoiceId} not found.");
+
+        return Ok(updatedInvoice);
+    }
+
+
+    [HttpPut("{invoiceId}/archive")]
+    public async Task<IActionResult> Archive(Guid invoiceId)
+    {
+        var archivedInvoice = await _invoiceService.ArchiveInvoiceAsync(invoiceId);
+
+        if (archivedInvoice == null)
+            return NotFound($"Invoice with ID {invoiceId} not found.");
+
+        return Ok(archivedInvoice);
     }
 }

@@ -15,9 +15,18 @@ public class InvoiceService : IInvoiceService
         _dbContext = dbContext;
     }
 
-    public Task<Invoice> ArchiveInvoiceAsync(Guid invoiceId)
+    public async Task<Invoice?> ArchiveInvoiceAsync(Guid invoiceId)
     {
-        throw new NotImplementedException();
+        var invoice = await _dbContext.Invoices.FindAsync(invoiceId);
+
+        if (invoice == null)
+            return null;
+
+        invoice.Status = InvoiceStatus.Archived;
+
+        await _dbContext.SaveChangesAsync();
+
+        return invoice;
     }
 
     public async Task<Invoice> ChangeInvoiceStatusAsync(Guid invoiceId, InvoiceStatus newStatus)
@@ -92,9 +101,27 @@ public class InvoiceService : IInvoiceService
         return true;
     }
 
-    public Task<Invoice> EditInvoiceAsync(Invoice editedInvoice)
+    public async Task<Invoice?> EditInvoiceAsync(Invoice editedInvoice)
     {
-        throw new NotImplementedException();
+        var existingInvoice = await _dbContext.Invoices
+            .Include(i => i.Rows)
+            .FirstOrDefaultAsync(i => i.Id == editedInvoice.Id);
+
+        if (existingInvoice == null)
+            return null;
+
+ 
+        existingInvoice.CustomerId = editedInvoice.CustomerId;
+        existingInvoice.StartDate = editedInvoice.StartDate;
+        existingInvoice.EndDate = editedInvoice.EndDate;
+        existingInvoice.Comment = editedInvoice.Comment;
+        existingInvoice.Status = editedInvoice.Status;
+
+        existingInvoice.Rows = editedInvoice.Rows;
+
+        await _dbContext.SaveChangesAsync();
+
+        return existingInvoice;
     }
 
     public async Task<Invoice?> GetInvoiceByIdAsync(Guid invoiceId)
